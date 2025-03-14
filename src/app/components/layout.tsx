@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import '@/app/globals.css'
-import Navbar from '@/app/components/Navbar'
 
 const inter = Inter({ 
   subsets: ['latin'],
@@ -21,19 +20,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={inter.className}>
-        <div className="flex flex-col min-h-screen">
-          <Navbar />
-          
-          <main className="flex-grow">
-            {children}
-          </main>
-          
-          <footer className="bg-gray-100 p-4 text-center">
-            <p>&copy; {new Date().getFullYear()} Medical Dashboard. All rights reserved.</p>
-          </footer>
-        </div>
+      <body className={`${inter.className} bg-[#F6F7F8]`}>
+        {children}
       </body>
     </html>
-  )
+  );
 }

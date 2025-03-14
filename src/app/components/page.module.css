@@ -1,0 +1,109 @@
+.navbar {
+	position: relative;
+	top: 18px;
+	width: 95%;
+	max-width: 1564px;
+	margin: 18px auto;
+	height: 72px;
+	background: #FFFFFF;
+	border-radius: 70px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0 2rem;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	box-sizing: border-box;
+  }
+  
+  .navContainer {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	width: 100%;
+  }
+  
+  .logoSection {
+	display: flex;
+	align-items: center;
+	max-width: 150px;
+  }
+  
+  .logo {
+	display: flex;
+	align-items: center;
+  }
+  
+  .logo a {
+	display: flex;
+	align-items: center;
+  }
+  
+  .logo img {
+	max-width: 150px;
+	max-height: 40px;
+	width: auto;
+	height: auto;
+	object-fit: contain;
+  }
+  
+  .linksSection {
+	display: flex;
+	justify-content: center;
+	flex-grow: 1;
+  }
+  
+  .navLinks {
+	display: flex;
+	list-style: none;
+	gap: 1rem;
+	margin: 0;
+	padding: 0;
+  }
+  
+  .navLinks li {
+	display: flex;
+	align-items: center;
+  }
+  
+  .navLinks li a {
+	display: flex;
+	align-items: center;
+	color: #333;
+	text-decoration: none;
+	font-size: 14px; /* Smaller font size */
+	font-weight: 500;
+	transition: color 0.3s ease;
+	padding: 0.3rem 0.7rem; /* Reduced padding */
+  }
+  
+  .iconContainer {
+	margin-right: 0.3rem; /* Reduced margin */
+	display: flex;
+	align-items: center;
+	justify-content: center;
+  }
+  
+  .icon {
+	width: 16px; /* Smaller icon size */
+	height: 16px;
+	background-size: contain;
+	background-repeat: no-repeat;
+	margin-right: 0.3rem;
+  }
+  
+  .activeLink a {
+	color: #00ff00;
+	font-weight: bold;
+  }
+  
+  .userProfile {
+	display: flex;
+	align-items: center;
+  }
+  
+  .userImage {
+	border-radius: 50%;
+	cursor: pointer;
+	width: 40px;  /* Smaller user image */
+	height: 40px;
+  }
