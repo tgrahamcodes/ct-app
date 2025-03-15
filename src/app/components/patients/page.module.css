@@ -273,3 +273,31 @@
 	  border-radius: 20px;
 	}
   }
+
+  .showAllButton {
+	background-color: #01F0D0;
+	color: white;
+	padding: 0.5rem 1rem;
+	border-radius: 41px;
+	font-size: 14px;
+	font-weight: 500;
+	transition: background-color 0.3s ease;
+	border: none;
+	cursor: pointer;
+  }
+  
+  .showAllButton:hover {
+	background-color: #00c0a0;
+  }
+
+  .portraitContainer {
+	display: flex;
+	justify-content: center;
+	margin-bottom: 1rem;
+  }
+  
+  .portraitImage {
+	width: 160px;
+	height: 160px;/* Circular image */
+	object-fit: cover;/* Matching teal border */
+  }

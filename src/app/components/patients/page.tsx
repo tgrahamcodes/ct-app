@@ -141,34 +141,30 @@ export default function Patients() {
             <table className={styles.diagnosticTable}>
               <thead>
                 <tr>
-                  <th>Test Name</th>
-                  <th>Date</th>
-                  <th>Result</th>
+                  <th>Problem</th>
+                  <th>Description</th>
+
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td>Blood Pressure</td>
-                  <td>12/15/2023</td>
                   <td>120/80 mmHg</td>
                   <td><span className={styles.statusNormal}>Normal</span></td>
                 </tr>
                 <tr>
                   <td>Cholesterol</td>
-                  <td>11/20/2023</td>
                   <td>190 mg/dL</td>
                   <td><span className={styles.statusWarning}>Borderline</span></td>
                 </tr>
                 <tr>
                   <td>Blood Sugar</td>
-                  <td>10/10/2023</td>
                   <td>105 mg/dL</td>
                   <td><span className={styles.statusNormal}>Normal</span></td>
                 </tr>
                 <tr>
                   <td>Vitamin D</td>
-                  <td>09/05/2023</td>
                   <td>25 ng/mL</td>
                   <td><span className={styles.statusWarning}>Low</span></td>
                 </tr>
@@ -176,9 +172,19 @@ export default function Patients() {
             </table>
           </div>
         </div>
-
         {/* Right Column - Patient Overview */}
         <div className={styles.rightColumn}>
+          {/* Portrait Image */}
+          <div className={styles.portraitContainer}>
+            <Image 
+              src="/portrait.png" 
+              alt="Patient Portrait" 
+              width={120} 
+              height={120} 
+              className={styles.portraitImage}
+            />
+          </div>
+
           <h2 className={styles.sectionTitle}>Patient Overview</h2>
           <div className="space-y-4">
             <div className="bg-gray-100 p-3 rounded-[16px]">
@@ -208,6 +214,15 @@ export default function Patients() {
                 </div>
               </div>
             </div>
+          </div>
+          
+          {/* Show All Information Button */}
+          <div className="mt-4 flex justify-center">
+            <button 
+              className={`${styles.showAllButton}`}
+            >
+              Show All Information
+            </button>
           </div>
         </div>
       </div>
