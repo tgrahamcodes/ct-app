@@ -7,9 +7,25 @@ const nextConfig: NextConfig = {
     config.resolve.alias['components'] = path.resolve(__dirname, 'components');
     return config;
   },
-  // Optional: if you're using TypeScript
+
   typescript: {
     ignoreBuildErrors: true
+  },
+
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: '/api/:path*',
+      },
+    ];
+  },
+
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['localhost:3000']
+    },
+    serverComponentsExternalPackages: ['node-fetch']
   }
 };
 

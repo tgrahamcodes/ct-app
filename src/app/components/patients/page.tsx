@@ -1,7 +1,84 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import Image from 'next/image';
 
 export default function Patients() {
+
+  const [patientData, setPatientData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [rawResponse, setRawResponse] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function fetchPatientData() {
+
+      try {
+        console.log('Fetching patient data...');
+
+        const response = await fetch('/api/patients', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+
+        console.log('Response status:', response.status);
+
+        // Get the response text
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+
+        // Check if response is not OK
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}, response: ${responseText}`);
+        }
+
+        // Parse the response
+        let data;
+
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('JSON Parsing Error:', parseError);
+          setRawResponse(responseText);
+          throw new Error(`Failed to parse response: ${responseText}`);
+        }
+        console.log('Parsed data:', data);
+        setPatientData(data);
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Detailed fetch error:', err);
+        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        setIsLoading(false);
+      }
+    }
+    fetchPatientData();
+  }, []);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+
+  if (error) {
+
+    return (
+      <div>
+        <h1>Error</h1>
+        <p>{error}</p>
+        {rawResponse && (
+          <div>
+            <h2>Raw Response:</h2>
+            <pre>{rawResponse}</pre>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+
   return (
     <div className={styles.pageContainer}>
       <div className={styles.columnContainer}>
@@ -12,8 +89,8 @@ export default function Patients() {
             <Image 
               src="/search.svg" 
               alt="Search" 
-              width={15} 
-              height={15} 
+              width={20} 
+              height={20} 
               className="cursor-pointer"
             />
           </div>
@@ -141,30 +218,34 @@ export default function Patients() {
             <table className={styles.diagnosticTable}>
               <thead>
                 <tr>
-                  <th>Problem</th>
-                  <th>Description</th>
-
+                  <th>Test Name</th>
+                  <th>Date</th>
+                  <th>Result</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <td>Blood Pressure</td>
+                  <td>12/15/2023</td>
                   <td>120/80 mmHg</td>
                   <td><span className={styles.statusNormal}>Normal</span></td>
                 </tr>
                 <tr>
                   <td>Cholesterol</td>
+                  <td>11/20/2023</td>
                   <td>190 mg/dL</td>
                   <td><span className={styles.statusWarning}>Borderline</span></td>
                 </tr>
                 <tr>
                   <td>Blood Sugar</td>
+                  <td>10/10/2023</td>
                   <td>105 mg/dL</td>
                   <td><span className={styles.statusNormal}>Normal</span></td>
                 </tr>
                 <tr>
                   <td>Vitamin D</td>
+                  <td>09/05/2023</td>
                   <td>25 ng/mL</td>
                   <td><span className={styles.statusWarning}>Low</span></td>
                 </tr>
@@ -172,6 +253,7 @@ export default function Patients() {
             </table>
           </div>
         </div>
+
         {/* Right Column - Patient Overview */}
         <div className={styles.rightColumn}>
           {/* Portrait Image */}
