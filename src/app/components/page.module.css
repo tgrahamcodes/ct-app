@@ -33,10 +33,9 @@
 	width: 100%;
   }
   
-  
   .searchIcon {
 	cursor: pointer;
-	margin-left: auto; /* This will push the icon to the far right */
+	margin-left: auto;
   }
   
   .logoSection {
@@ -87,21 +86,21 @@
 	align-items: center;
 	color: #333;
 	text-decoration: none;
-	font-size: 14px; /* Smaller font size */
+	font-size: 14px;
 	font-weight: 500;
 	transition: color 0.3s ease;
-	padding: 0.3rem 0.7rem; /* Reduced padding */
+	padding: 0.3rem 0.7rem;
   }
   
   .iconContainer {
-	margin-right: 0.3rem; /* Reduced margin */
+	margin-right: 0.3rem;
 	display: flex;
 	align-items: center;
 	justify-content: center;
   }
   
   .icon {
-	width: 16px; /* Smaller icon size */
+	width: 16px;
 	height: 16px;
 	background-size: contain;
 	background-repeat: no-repeat;
@@ -121,6 +120,6 @@
   .userImage {
 	border-radius: 50%;
 	cursor: pointer;
-	width: 40px;  /* Smaller user image */
+	width: 40px;
 	height: 40px;
   }

@@ -13,60 +13,60 @@
 	padding: 0 2rem;
 	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 	box-sizing: border-box;
-  }
-  
-  .navContainer {
+}
+
+.navContainer {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	width: 100%;
-  }
-  
-  .logoSection {
+}
+
+.logoSection {
 	display: flex;
 	align-items: center;
 	max-width: 150px;
-  }
-  
-  .logo {
+}
+
+.logo {
 	display: flex;
 	align-items: center;
-  }
-  
-  .logo a {
+}
+
+.logo a {
 	display: flex;
 	align-items: center;
-  }
-  
-  .logo img {
+}
+
+.logo img {
 	max-width: 150px;
 	max-height: 40px;
 	width: auto;
 	height: auto;
 	object-fit: contain;
-  }
-  
-  .linksSection {
+}
+
+.linksSection {
 	display: flex;
 	justify-content: center;
 	flex-grow: 1;
-  }
-  
-  .navLinks {
+}
+
+.navLinks {
 	display: flex;
 	list-style: none;
 	gap: 1rem;
 	margin: 0;
 	padding: 0;
-  }
-  
-  .navLinks li {
+}
+
+.navLinks li {
 	display: flex;
 	align-items: center;
 	position: relative;
-  }
-  
-  .navLinks li a {
+}
+
+.navLinks li a {
 	display: flex;
 	align-items: center;
 	color: #333;
@@ -77,19 +77,19 @@
 	padding: 0.5rem 1rem;
 	position: relative;
 	z-index: 2;
-  }
-  
-  .activeLink {
+}
+
+.activeLink {
 	position: relative;
-  }
-  
-  .activeLink a {
+}
+
+.activeLink a {
 	position: relative;
 	z-index: 3;
 	color: white;
-  }
-  
-  .activeLink::before {
+}
+
+.activeLink::before {
 	content: '';
 	position: absolute;
 	top: 50%;
@@ -100,82 +100,82 @@
 	background: #01F0D0;
 	border-radius: 41px;
 	z-index: 1;
-  }
-  
-  .iconContainer {
+}
+
+.iconContainer {
 	margin-right: 0.3rem;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-  }
-  
-  .icon {
+}
+
+.icon {
 	width: 16px;
 	height: 16px;
 	background-size: contain;
 	background-repeat: no-repeat;
 	margin-right: 0.3rem;
-  }
-  
-  .userProfile {
+}
+
+.userProfile {
 	display: flex;
 	align-items: center;
 	position: relative;
-  }
-  
-  .userProfileContainer {
+}
+
+.userProfileContainer {
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
 	cursor: pointer;
-  }
-  
-  .userImage {
+}
+
+.userImage {
 	border-radius: 50%;
 	width: 40px;
 	height: 40px;
 	object-fit: cover;
-  }
-  
-  .userProfileText {
+}
+
+.userProfileText {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
 	margin-right: 0.5rem;
-  }
-  
-  .userName {
+}
+
+.userName {
 	font-size: 12px;
 	font-weight: 600;
 	color: #333;
 	line-height: 1.2;
-  }
-  
-  .userRole {
+}
+
+.userRole {
 	font-size: 10px;
 	color: #666;
 	line-height: 1.2;
-  }
-  
-  .userProfileIcons {
+}
+
+.userProfileIcons {
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
-  }
-  
-  .profileIcon {
+}
+
+.profileIcon {
 	width: 16px;
 	height: 16px;
 	cursor: pointer;
 	opacity: 0.7;
 	transition: opacity 0.3s ease;
-  }
-  
-  .profileIcon:hover {
+}
+
+.profileIcon:hover {
 	opacity: 1;
-  }
-  
-  .userDropdown {
+}
+
+.userDropdown {
 	position: absolute;
 	top: 100%;
 	right: 0;
@@ -186,47 +186,47 @@
 	min-width: 200px;
 	padding: 10px;
 	margin-top: 10px;
-  }
-  
-  .userDropdown ul {
+}
+
+.userDropdown ul {
 	list-style: none;
 	padding: 0;
 	margin: 0;
-  }
-  
-  .userDropdown ul li {
+}
+
+.userDropdown ul li {
 	padding: 10px 0;
 	border-bottom: 1px solid #f0f0f0;
-  }
-  
-  .userDropdown ul li:last-child {
+}
+
+.userDropdown ul li:last-child {
 	border-bottom: none;
-  }
-  
-  .userDropdown ul li a {
+}
+
+.userDropdown ul li a {
 	color: #333;
 	text-decoration: none;
 	display: block;
-  }
-  
-  /* Responsive Adjustments */
-  @media (max-width: 768px) {
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
 	.navbar {
-	  flex-direction: column;
-	  height: auto;
+		flex-direction: column;
+		height: auto;
 	}
-  
+
 	.navContainer {
-	  flex-direction: column;
+		flex-direction: column;
 	}
-  
+
 	.navLinks {
-	  flex-direction: column;
-	  align-items: center;
+		flex-direction: column;
+		align-items: center;
 	}
-  
+
 	.activeLink::before {
-	  width: 100%;
-	  border-radius: 0;
+		width: 100%;
+		border-radius: 0;
 	}
-  }
+}

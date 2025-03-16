@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('Attempting to fetch patient data');
+    console.log('Attempting to fetch patient data', request);
     
     const response = await fetch('https://fedskillstest.coalitiontechnologies.workers.dev', {
       method: 'GET',
@@ -12,8 +12,6 @@ export async function GET(request: NextRequest) {
       },
       cache: 'no-store'
     });
-
-    console.log('Response status:', response.status);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -29,6 +27,7 @@ export async function GET(request: NextRequest) {
     console.log('Parsed data:', data);
 
     return NextResponse.json(data);
+    
   } catch (error) {
     console.error('Detailed error in patient data fetch:', error);
     
