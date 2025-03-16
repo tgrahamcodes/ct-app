@@ -1,83 +1,174 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import Image from 'next/image';
 
-export default function Patients() {
+// Explicitly define the interface with optional diagnostics
+interface PatientData {
+  patient_id: string;
+  name: string;
+  gender: string;
+  age: number;
+  profile_picture: string;
+  date_of_birth: string;
+  phone_number: string;
+  emergency_contact: string;
+  insurance_type: string;
+  diagnosis_history?: {
+    month: string;
+    year: number;
+    blood_pressure: {
+      systolic: {
+        value: number;
+        levels: string;
+      },
+      diastolic: {
+        value: number;
+        levels: string;
+      }
+    },
+    heart_rate: {
+      value: number;
+      levels: string;
+    },
+    respiratory_rate: {
+      value: number;
+      levels: string;
+    };
+    temperature: {
+      value: number;
+      levels: string;
+    };
+  }[];
+}
 
-  const [patientData, setPatientData] = useState<any>(null);
+export default function PatientsPage() {
+  const [patientData, setPatientData] = useState<PatientData[] | null>(null);
+  const [selectedPatient, setSelectedPatient] = useState<PatientData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [rawResponse, setRawResponse] = useState<string | null>(null);
+  const [showAllInfo, setShowAllInfo] = useState(false);
 
   useEffect(() => {
-    async function fetchPatientData() {
-
+    const fetchPatientData = async () => {
       try {
-        console.log('Fetching patient data...');
-
+        setIsLoading(true);
         const response = await fetch('/api/patients', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-          }
+            'Accept': 'application/json'
+          },
+          cache: 'no-store'
         });
 
-        console.log('Response status:', response.status);
-
-        // Get the response text
-        const responseText = await response.text();
-        console.log('Raw response:', responseText);
-
-        // Check if response is not OK
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}, response: ${responseText}`);
+          throw new Error('Failed to fetch patient data');
         }
 
-        // Parse the response
-        let data;
-
-        try {
-          data = JSON.parse(responseText);
-        } catch (parseError) {
-          console.error('JSON Parsing Error:', parseError);
-          setRawResponse(responseText);
-          throw new Error(`Failed to parse response: ${responseText}`);
-        }
-        console.log('Parsed data:', data);
+        const data: PatientData[] = await response.json();
         setPatientData(data);
-        setIsLoading(false);
+
+        // Select first patient by default
+        if (data && data.length > 0) {
+          setSelectedPatient(data[0]);
+        }
       } catch (err) {
-        console.error('Detailed fetch error:', err);
         setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      } finally {
         setIsLoading(false);
       }
-    }
+    };
+
     fetchPatientData();
   }, []);
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-
-  if (error) {
+  // Diagnostic Information Section with Null Check
+  const renderDiagnosticTable = () => {
+    // Check if selectedPatient exists and has diagnostics
+    if (!selectedPatient || !selectedPatient.diagnosis_history || selectedPatient.diagnosis_history.length === 0) {
+      return (
+        <div className={styles.diagnosticSection}>
+          <h2 className={styles.sectionTitle}>Diagnostic Information</h2>
+          <p className="text-gray-500">No diagnostic information available</p>
+        </div>
+      );
+    }
 
     return (
-      <div>
-        <h1>Error</h1>
-        <p>{error}</p>
-        {rawResponse && (
-          <div>
-            <h2>Raw Response:</h2>
-            <pre>{rawResponse}</pre>
-          </div>
-        )}
+      <div className={styles.diagnosticSection}>
+        <h2 className={styles.sectionTitle}>Diagnostic Information</h2>
+        <table className={styles.diagnosticTable}>
+          <thead>
+            <tr>
+              <th>Test Name</th>
+              <th>Date</th>
+              <th>Result</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {selectedPatient.diagnosis_history.map((diagnostic, index) => (
+              <tr key={index}>
+                <td>Blood Pressure</td>
+                <td>{diagnostic.month} {diagnostic.year}</td>
+                <td>
+                  {diagnostic.blood_pressure.systolic.value}/
+                  {diagnostic.blood_pressure.diastolic.value}
+                </td>
+                <td>
+                  <span
+                    className={`
+                      ${styles.statusBadge}
+                      ${diagnostic.blood_pressure.systolic.levels.toLowerCase() === 'normal' ? styles.statusNormal :
+                        diagnostic.blood_pressure.systolic.levels.toLowerCase() === 'warning' ? styles.statusWarning :
+                          styles.statusCritical}
+                    `}
+                  >
+                    {diagnostic.blood_pressure.systolic.levels}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  };
+
+  // Loading State
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
       </div>
     );
   }
 
+  // Error State
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-red-100">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-red-600 mb-4">Error</h2>
+          <p className="text-red-500">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // No Patients State
+  if (!patientData || patientData.length === 0) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-2xl font-bold text-gray-600 mb-4">No Patients Found</h2>
+          <p className="text-gray-500">There are currently no patients in the system.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.pageContainer}>
@@ -85,25 +176,38 @@ export default function Patients() {
         {/* Left Column - Patient List */}
         <div className={styles.sectionContainer}>
           <div className="flex items-center justify-between mb-4">
-            <h2 className={styles.sectionTitle}>Patient</h2>
-            <Image 
-              src="/search.svg" 
-              alt="Search" 
-              width={20} 
-              height={20} 
+            <h2 className={styles.sectionTitle}>Patients</h2>
+            <Image
+              src="/search.svg"
+              alt="Search"
+              width={20}
+              height={20}
               className="cursor-pointer"
             />
           </div>
-          <div className="divide-y divide-gray-200">
-            {[1, 2, 3, 4, 5].map((patient) => (
-              <div 
-                key={patient} 
-                className={`${styles.patientListItem} ${
-                  patient === 1 ? styles.activePatient : ''
-                } flex justify-between items-center`}
+          <div>
+            {patientData.map((patient) => (
+              <div
+                key={patient.patient_id}
+                className={`${styles.patientListItem} ${selectedPatient?.patient_id === patient.patient_id ? styles.activePatient : ''
+                  }`}
+                onClick={() => setSelectedPatient(patient)}
               >
-                <span>Patient {patient}</span>
-                <span className="text-sm text-gray-500">ID: {1000 + patient}</span>
+                <div className={styles.patientInfo}>
+                  <span className={styles.patientName}>{patient.name}</span>
+                  <span className={styles.patientSubtext}>
+                    {patient.gender}, {patient.age}
+                  </span>
+                </div>
+                <span className="text-sm text-gray-500">
+                  <Image
+                    src="/horizontal.svg"
+                    alt="Horizontal"
+                    width={20}
+                    height={20}
+                    className="cursor-pointer"
+                  />
+                </span>
               </div>
             ))}
           </div>
@@ -111,201 +215,256 @@ export default function Patients() {
 
         {/* Middle Column - Patient Details */}
         <div className={styles.sectionContainer}>
-          {/* Graph Section */}
-          <div className={styles.graphSection}>
-            <h2 className={styles.sectionTitle}>Patient Metrics</h2>
-            <div className={styles.graphContainer}>
-              <div className={styles.lineGraph}>
-                <div className={styles.graphGrid}>
-                  {[100, 200, 300].map((gridLine) => (
-                    <div key={gridLine} className={styles.gridLine} style={{bottom: `${gridLine/3}%`}}>
-                      <span>{gridLine}</span>
-                    </div>
-                  ))}
-                </div>
-                <div className={styles.lineContainer}>
-                  {[
-                    { month: 'Jan', value: 120 },
-                    { month: 'Feb', value: 180 },
-                    { month: 'Mar', value: 220 },
-                    { month: 'Apr', value: 190 },
-                    { month: 'May', value: 250 },
-                    { month: 'Jun', value: 300 }
-                  ].map((data, index, array) => (
-                    <div 
-                      key={index} 
-                      className={styles.linePoint}
-                      style={{
-                        bottom: `${data.value/3}%`,
-                        left: `${(index / (array.length - 1)) * 100}%`
-                      }}
-                    >
-                      <div className={styles.pointDot}></div>
-                      <span className={styles.pointLabel}>{data.month}</span>
-                    </div>
-                  ))}
-                  <svg className={styles.linePath}>
-                    <path 
-                      d={`M 0 ${300/3}% ${[
-                        { month: 'Jan', value: 120 },
-                        { month: 'Feb', value: 180 },
-                        { month: 'Mar', value: 220 },
-                        { month: 'Apr', value: 190 },
-                        { month: 'May', value: 250 },
-                        { month: 'Jun', value: 300 }
-                      ].map((data, index, array) => 
-                        `L ${(index / (array.length - 1)) * 100}% ${data.value/3}%`
-                      ).join(' ')}`}
-                      fill="none"
-                      stroke="#01F0D0"
-                      strokeWidth="3"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
-          </div>
-
           {/* Squares Section */}
           <div className={styles.squaresContainer}>
             <div className={`${styles.square} ${styles.blueSquare}`}>
               <div className={styles.squareIconContainer}>
-                <Image 
-                  src="/lungs.svg" 
-                  alt="Lungs Icon" 
-                  width={96} 
-                  height={96} 
+                <Image
+                  src="/lungs.svg"
+                  alt="Lungs Icon"
+                  width={96}
+                  height={96}
                   className={styles.squareIcon}
                 />
               </div>
-              <h3 className={styles.squareTitle}>Total Patients</h3>
-              <div className={styles.squareValue}>1,240</div>
-              <p className={styles.squareSubtext}>+10% from last month</p>
+              <h3 className={styles.squareTitle}>Respiratory Rate</h3>
+              <div className={styles.squareValue}>
+                {selectedPatient?.diagnosis_history?.[0]?.respiratory_rate?.value || 'N/A'}
+              </div>
+              <p className={styles.squareSubtext}>
+                {selectedPatient?.diagnosis_history?.[0]?.respiratory_rate?.levels || 'breaths per minute'}
+              </p>
             </div>
+
             <div className={`${styles.square} ${styles.pinkSquare}`}>
               <div className={styles.squareIconContainer}>
-                <Image 
-                  src="/temperature.svg" 
-                  alt="Temperature Icon" 
-                  width={96} 
-                  height={96} 
+                <Image
+                  src="/temperature.svg"
+                  alt="Temperature Icon"
+                  width={96}
+                  height={96}
                   className={styles.squareIcon}
                 />
               </div>
-              <h3 className={styles.squareTitle}>New Patients</h3>
-              <div className={styles.squareValue}>240</div>
-              <p className={styles.squareSubtext}>+5% from last week</p>
+              <h3 className={styles.squareTitle}>Temperature</h3>
+              <div className={styles.squareValue}>
+                {selectedPatient?.diagnosis_history?.[0]?.temperature?.value || 'N/A'}
+              </div>
+              <p className={styles.squareSubtext}>
+                {selectedPatient?.diagnosis_history?.[0]?.temperature?.levels || '°C'}
+              </p>
             </div>
+
             <div className={`${styles.square} ${styles.lightPinkSquare}`}>
               <div className={styles.squareIconContainer}>
-                <Image 
-                  src="/heart.svg" 
-                  alt="Heart Icon" 
-                  width={96} 
-                  height={96} 
+                <Image
+                  src="/heart.svg"
+                  alt="Heart Icon"
+                  width={96}
+                  height={96}
                   className={styles.squareIcon}
                 />
               </div>
-              <h3 className={styles.squareTitle}>Pending Appointments</h3>
-              <div className={styles.squareValue}>54</div>
-              <p className={styles.squareSubtext}>+2 from yesterday</p>
+              <h3 className={styles.squareTitle}>Heart Rate</h3>
+              <div className={styles.squareValue}>
+                {selectedPatient?.diagnosis_history?.[0]?.heart_rate?.value || 'N/A'}
+              </div>
+              <p className={styles.squareSubtext}>
+                {selectedPatient?.diagnosis_history?.[0]?.heart_rate?.levels || 'bpm'}
+              </p>
             </div>
           </div>
 
-          {/* Diagnostic Information Section */}
-          <div className={styles.diagnosticSection}>
-            <h2 className={styles.sectionTitle}>Diagnostic Information</h2>
-            <table className={styles.diagnosticTable}>
-              <thead>
-                <tr>
-                  <th>Test Name</th>
-                  <th>Date</th>
-                  <th>Result</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Blood Pressure</td>
-                  <td>12/15/2023</td>
-                  <td>120/80 mmHg</td>
-                  <td><span className={styles.statusNormal}>Normal</span></td>
-                </tr>
-                <tr>
-                  <td>Cholesterol</td>
-                  <td>11/20/2023</td>
-                  <td>190 mg/dL</td>
-                  <td><span className={styles.statusWarning}>Borderline</span></td>
-                </tr>
-                <tr>
-                  <td>Blood Sugar</td>
-                  <td>10/10/2023</td>
-                  <td>105 mg/dL</td>
-                  <td><span className={styles.statusNormal}>Normal</span></td>
-                </tr>
-                <tr>
-                  <td>Vitamin D</td>
-                  <td>09/05/2023</td>
-                  <td>25 ng/mL</td>
-                  <td><span className={styles.statusWarning}>Low</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          {/* Render Diagnostic Table with Null Check */}
+          {renderDiagnosticTable()}
         </div>
 
         {/* Right Column - Patient Overview */}
         <div className={styles.rightColumn}>
-          {/* Portrait Image */}
+          {/* Portrait Image with Fallback */}
           <div className={styles.portraitContainer}>
-            <Image 
-              src="/portrait.png" 
-              alt="Patient Portrait" 
-              width={120} 
-              height={120} 
+            <Image
+              src={selectedPatient?.profile_picture || '/default-avatar.png'}
+              alt="Patient Portrait"
+              width={120}
+              height={120}
               className={styles.portraitImage}
+              onError={(e) => {
+                const imgElement = e.target as HTMLImageElement;
+                imgElement.src = '/default-avatar.png';
+              }}
             />
           </div>
 
-          <h2 className={styles.sectionTitle}>Patient Overview</h2>
-          <div className="space-y-4">
-            <div className="bg-gray-100 p-3 rounded-[16px]">
-              <h3 className="font-medium mb-2">Recent Visits</h3>
-              <ul className="space-y-1">
-                {[1, 2, 3].map((visit) => (
-                  <li 
-                    key={visit} 
-                    className="text-sm text-gray-600 flex justify-between"
-                  >
-                    <span>Visit {visit}</span>
-                    <span>01/01/2023</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-medium mb-2">Quick Stats</h3>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-blue-100 p-2 rounded-[16px] text-center">
-                  <div className="text-xl font-bold text-blue-600">5</div>
-                  <div className="text-xs text-blue-500">Appointments</div>
-                </div>
-                <div className="bg-green-100 p-2 rounded-[16px] text-center">
-                  <div className="text-xl font-bold text-green-600">3</div>
-                  <div className="text-xs text-green-500">Prescriptions</div>
+          {/* Patient Details with Null Check */}
+          {selectedPatient ? (
+            <div className="space-y-4">
+              <div className="bg-gray-100 p-3 rounded-[16px]">
+                <h3 className="font-medium mb-2">Patient Details</h3>
+                <div className="space-y-2">
+                  <div className={styles.patientListItem}>
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-white p-2 rounded-lg flex items-center justify-center">
+                        <Image
+                          src="/birth-icon.svg"
+                          alt="Date of Birth"
+                          width={40}
+                          height={40}
+                        />
+                      </div>
+                      <div>
+                        <span className={styles.patientName}>Date of Birth</span>
+                        <div className={styles.patientSubtext}>{selectedPatient.date_of_birth}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={styles.patientListItem}>
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-white p-2 rounded-lg flex items-center justify-center">
+                        <Image
+                          src={selectedPatient.gender.toLowerCase() === 'male'
+                              ? '/male-icon.svg'
+                              : '/female-icon.svg'
+                          }
+                          alt="Gender"
+                          width={40}
+                          height={40}
+                        />
+                      </div>
+                      <div>
+                        <span className={styles.patientName}>Gender</span>
+                        <div className={styles.patientSubtext}>{selectedPatient.gender}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={styles.patientListItem}>
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-white p-2 rounded-lg flex items-center justify-center">
+                        <Image
+                          src="/phone-icon.svg"
+                          alt="Contact Info"
+                          width={40}
+                          height={40}
+                        />
+                      </div>
+                      <div>
+                        <span className={styles.patientName}>Contact Info</span>
+                        <div className={styles.patientSubtext}>{selectedPatient.phone_number}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={styles.patientListItem}>
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-white p-2 rounded-lg flex items-center justify-center">
+                        <Image
+                          src="/phone-icon.svg"
+                          alt="Emergency Contact"
+                          width={40}
+                          height={40}
+                        />
+                      </div>
+                      <div>
+                        <span className={styles.patientName}>Emergency Contact</span>
+                        <div className={styles.patientSubtext}>{selectedPatient.emergency_contact}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={styles.patientListItem}>
+                    <div className="flex items-center space-x-4">
+                      <div className="bg-white p-2 rounded-lg flex items-center justify-center">
+                        <Image
+                          src="/insurance-icon.svg"
+                          alt="Insurance Provider"
+                          width={40}
+                          height={40}
+                        />
+                      </div>
+                      <div>
+                        <span className={styles.patientName}>Insurance Provider</span>
+                        <div className={styles.patientSubtext}>{selectedPatient.insurance_type}</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              {/* Additional Information - Shown only when showAllInfo is true */}
+              {showAllInfo && (
+                <div className="bg-gray-100 p-3 rounded-[16px] mt-4">
+                  <h3 className="font-medium mb-2">Detailed Diagnosis History</h3>
+                  {selectedPatient.diagnosis_history?.map((history, index) => (
+                    <div
+                      key={index}
+                      className="mt-2 bg-white p-2 rounded shadow-sm"
+                    >
+                      <div className="flex justify-between mb-2">
+                        <span className="font-medium">
+                          {history.month} {history.year}
+                        </span>
+                      </div>
+
+                      <div className="space-y-2">
+                        {[
+                          {
+                            name: 'Blood Pressure',
+                            value: `${history.blood_pressure.systolic.value}/${history.blood_pressure.diastolic.value}`,
+                            levels: history.blood_pressure.systolic.levels
+                          },
+
+                          {
+                            name: 'Heart Rate',
+                            value: `${history.heart_rate.value} bpm`,
+                            levels: history.heart_rate.levels
+                          },
+
+                          {
+                            name: 'Respiratory Rate',
+                            value: `${history.respiratory_rate.value}`,
+                            levels: history.respiratory_rate.levels
+                          },
+                          {
+                            name: 'Temperature',
+                            value: `${history.temperature.value}°C`,
+                            levels: history.temperature.levels
+                          }
+                        ].map((item, idx) => (
+                          <div key={idx} className={styles.patientListItem}>
+                            <div className={styles.patientInfo}>
+                              <span className={styles.patientName}>{item.name}</span>
+                              <span className={styles.patientSubtext}>{item.value}</span>
+                            </div>
+                            <span className={styles.patientSubtext}>
+                              {item.levels}
+                            </span>
+                          </div>
+                        ))}
+                        <br />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Show All Information Button */}
+              <br />
+              <div className="mt-4 flex justify-center">
+                <button
+                  onClick={() => setShowAllInfo(!showAllInfo)}
+                  className={`${styles.showAllButton} flex items-center justify-center`}>
+                  {showAllInfo ? 'Hide Additional Information' : 'Show All Information'}
+                </button>
+              </div>
             </div>
-          </div>
-          
-          {/* Show All Information Button */}
-          <div className="mt-4 flex justify-center">
-            <button 
-              className={`${styles.showAllButton}`}
-            >
-              Show All Information
-            </button>
-          </div>
+
+          ) : (
+            <div className="text-center text-gray-500">
+              Select a patient to view details
+            </div>
+          )}
         </div>
       </div>
     </div>

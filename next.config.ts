@@ -12,6 +12,15 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true
   },
 
+  images: {
+    domains: [
+      'fedskillstest.ct.digital',
+      'fedskillstest.coalitiontechnologies.workers.dev',
+      'localhost',
+      '127.0.0.1'
+    ]
+  },
+
   async rewrites() {
     return [
       {
@@ -24,9 +33,9 @@ const nextConfig: NextConfig = {
   experimental: {
     serverActions: {
       allowedOrigins: ['localhost:3000']
-    },
-    serverComponentsExternalPackages: ['node-fetch']
-  }
+    }
+  },
+  serverExternalPackages: ['node-fetch']
 };
 
 export default nextConfig;

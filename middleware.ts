@@ -1,31 +1,19 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+// middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname
 
-  // Define public paths
-  const isPublicPath = path === '/login' || path === '/signup'
+  console.log('Middleware intercepted request:');
+  console.log('Method:', request.method);
+  console.log('URL:', request.url);
+  console.log('Headers:', Object.fromEntries(request.headers.entries()));
 
-  // Get token from cookies
-  const token = request.cookies.get('token')?.value || ''
-
-  // Redirect logic
-  if (isPublicPath && token) {
-    return NextResponse.redirect(new URL('/components/overview', request.url))
-  }
-
-  if (!isPublicPath && !token) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
+  // Optional: Modify headers or perform checks
+  return NextResponse.next();
 }
 
-// See "Matching Paths" below to learn more
+
 export const config = {
-  matcher: [
-    '/',
-    '/login',
-    '/signup',
-    '/components/:path*'
-  ]
-}
+  matcher: '/api/:path*'
+};
