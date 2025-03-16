@@ -1,8 +1,52 @@
 'use client';
 
+// Add these imports at the top of your file
 import React, { useState, useEffect } from 'react';
 import styles from './page.module.css';
 import Image from 'next/image';
+import {
+
+  Chart as ChartJS,
+
+  CategoryScale,
+
+  LinearScale,
+
+  PointElement,
+
+  LineElement,
+
+  Title,
+
+  Tooltip,
+
+  Legend,
+  Chart
+
+} from 'chart.js';
+
+import { Line } from 'react-chartjs-2';
+
+
+// Register ChartJS components
+
+ChartJS.register(
+
+  CategoryScale,
+
+  LinearScale,
+
+  PointElement,
+
+  LineElement,
+
+  Title,
+
+  Tooltip,
+
+  Legend
+
+);
 
 // Explicitly define the interface with optional diagnostics
 interface PatientData {
@@ -49,6 +93,41 @@ export default function PatientsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAllInfo, setShowAllInfo] = useState(false);
+
+  const prepareBloodPressureData = () => {
+    if (!selectedPatient?.diagnosis_history) return null;
+
+    // Sort diagnosis history by date (most recent first)
+    const sortedHistory = [...selectedPatient.diagnosis_history].sort((a, b) => {
+
+      // Assuming you want to sort by year and month
+      return b.year - a.year ||
+        ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+          .indexOf(b.month) -
+        ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+          .indexOf(a.month);
+    });
+
+    return {
+      labels: sortedHistory.map(h => `${h.month} ${h.year}`),
+      datasets: [
+        {
+          label: 'Systolic',
+          data: sortedHistory.map(h => h.blood_pressure.systolic.value),
+          borderColor: '#C26EB4',
+          backgroundColor: 'rgba(194, 110, 180, 0.5)',
+          tension: 0.1
+        },
+        {
+          label: 'Diastolic',
+          data: sortedHistory.map(h => h.blood_pressure.diastolic.value),
+          borderColor: '#7E6CAB',
+          backgroundColor: 'rgba(126, 108, 171, 0.5)',
+          tension: 0.1
+        }
+      ]
+    };
+  };
 
   useEffect(() => {
     const fetchPatientData = async () => {
@@ -213,71 +292,130 @@ export default function PatientsPage() {
           </div>
         </div>
 
-        {/* Middle Column - Patient Details */}
-        <div className={styles.sectionContainer}>
-          {/* Squares Section */}
-          <div className={styles.squaresContainer}>
-            <div className={`${styles.square} ${styles.blueSquare}`}>
-              <div className={styles.squareIconContainer}>
-                <Image
-                  src="/lungs.svg"
-                  alt="Lungs Icon"
-                  width={96}
-                  height={96}
-                  className={styles.squareIcon}
-                />
-              </div>
-              <h3 className={styles.squareTitle}>Respiratory Rate</h3>
-              <div className={styles.squareValue}>
-                {selectedPatient?.diagnosis_history?.[0]?.respiratory_rate?.value || 'N/A'}
-              </div>
-              <p className={styles.squareSubtext}>
-                {selectedPatient?.diagnosis_history?.[0]?.respiratory_rate?.levels || 'breaths per minute'}
-              </p>
-            </div>
-
-            <div className={`${styles.square} ${styles.pinkSquare}`}>
-              <div className={styles.squareIconContainer}>
-                <Image
-                  src="/temperature.svg"
-                  alt="Temperature Icon"
-                  width={96}
-                  height={96}
-                  className={styles.squareIcon}
-                />
-              </div>
-              <h3 className={styles.squareTitle}>Temperature</h3>
-              <div className={styles.squareValue}>
-                {selectedPatient?.diagnosis_history?.[0]?.temperature?.value || 'N/A'}
-              </div>
-              <p className={styles.squareSubtext}>
-                {selectedPatient?.diagnosis_history?.[0]?.temperature?.levels || '°C'}
-              </p>
-            </div>
-
-            <div className={`${styles.square} ${styles.lightPinkSquare}`}>
-              <div className={styles.squareIconContainer}>
-                <Image
-                  src="/heart.svg"
-                  alt="Heart Icon"
-                  width={96}
-                  height={96}
-                  className={styles.squareIcon}
-                />
-              </div>
-              <h3 className={styles.squareTitle}>Heart Rate</h3>
-              <div className={styles.squareValue}>
-                {selectedPatient?.diagnosis_history?.[0]?.heart_rate?.value || 'N/A'}
-              </div>
-              <p className={styles.squareSubtext}>
-                {selectedPatient?.diagnosis_history?.[0]?.heart_rate?.levels || 'bpm'}
-              </p>
-            </div>
-          </div>
-
-          {/* Render Diagnostic Table with Null Check */}
-          {renderDiagnosticTable()}
+{/* Middle Column - Patient Details */}
+<div className={styles.sectionContainer}>
+  <h2 className={styles.sectionTitle}>Diagnostic History</h2>
+  {selectedPatient && (
+    <div
+      className={`${styles.sectionContainer} w-full`}
+      style={{
+        backgroundColor: '#F4F0FE',
+        marginBottom: '1rem',
+        height: 'auto',
+        minHeight: '400px',
+        overflow: 'visible'
+      }}
+    >
+      <h2 className={styles.sectionTitle}>Blood Pressure</h2>
+      <div className="flex">
+        <div className="w-full"> {/* Ensure full width */}
+          <Line
+            data={prepareBloodPressureData()}
+            options={{
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: 'right', // Move legend to the right side
+                  labels: {
+                    generateLabels: (chart) => {
+                      const originalLabels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+                      return originalLabels.map((label, index) => ({
+                        ...label,
+                        text: index === 0 
+                          ? `Systolic: ${selectedPatient.diagnosis_history[0].blood_pressure.systolic.value} (${selectedPatient.diagnosis_history[0].blood_pressure.systolic.levels})` 
+                          : `Diastolic: ${selectedPatient.diagnosis_history[0].blood_pressure.diastolic.value} (${selectedPatient.diagnosis_history[0].blood_pressure.diastolic.levels})`
+                      }));
+                    },
+                    usePointStyle: true,
+                    pointStyle: 'circle',
+                    font: {
+                      weight: 'bold'
+                    }
+                  }
+                },
+                title: {
+                  display: false,
+                }
+              },
+              scales: {
+                y: {
+                  min: 60,
+                  max: 180,
+                  ticks: {
+                    stepSize: 20
+                  }
+                }
+              }
+            }}
+          />
         </div>
+      </div>
+    </div>
+  )}
+  
+  {/* Squares Section */}
+  <div className={styles.squaresContainer}>
+    <div className={`${styles.square} ${styles.blueSquare}`}>
+      <div className={styles.squareIconContainer}>
+        <Image
+          src="/lungs.svg"
+          alt="Lungs Icon"
+          width={96}
+          height={96}
+          className={styles.squareIcon}
+        />
+      </div>
+      <h3 className={styles.squareTitle}>Respiratory Rate</h3>
+      <div className={styles.squareValue}>
+        {selectedPatient?.diagnosis_history?.[0]?.respiratory_rate?.value || 'N/A'}
+      </div>
+      <p className={styles.squareSubtext}>
+        {selectedPatient?.diagnosis_history?.[0]?.respiratory_rate?.levels || 'breaths per minute'}
+      </p>
+    </div>
+
+    <div className={`${styles.square} ${styles.pinkSquare}`}>
+      <div className={styles.squareIconContainer}>
+        <Image
+          src="/temperature.svg"
+          alt="Temperature Icon"
+          width={96}
+          height={96}
+          className={styles.squareIcon}
+        />
+      </div>
+      <h3 className={styles.squareTitle}>Temperature</h3>
+      <div className={styles.squareValue}>
+        {selectedPatient?.diagnosis_history?.[0]?.temperature?.value || 'N/A'}
+      </div>
+      <p className={styles.squareSubtext}>
+        {selectedPatient?.diagnosis_history?.[0]?.temperature?.levels || '°C'}
+      </p>
+    </div>
+
+    <div className={`${styles.square} ${styles.lightPinkSquare}`}>
+      <div className={styles.squareIconContainer}>
+        <Image
+          src="/heart.svg"
+          alt="Heart Icon"
+          width={96}
+          height={96}
+          className={styles.squareIcon}
+        />
+      </div>
+      <h3 className={styles.squareTitle}>Heart Rate</h3>
+      <div className={styles.squareValue}>
+        {selectedPatient?.diagnosis_history?.[0]?.heart_rate?.value || 'N/A'}
+      </div>
+      <p className={styles.squareSubtext}>
+        {selectedPatient?.diagnosis_history?.[0]?.heart_rate?.levels || 'bpm'}
+      </p>
+    </div>
+  </div>
+
+  {/* Render Diagnostic Table with Null Check */}
+  {renderDiagnosticTable()}
+</div>
 
         {/* Right Column - Patient Overview */}
         <div className={styles.rightColumn}>
@@ -324,8 +462,8 @@ export default function PatientsPage() {
                       <div className="bg-white p-2 rounded-lg flex items-center justify-center">
                         <Image
                           src={selectedPatient.gender.toLowerCase() === 'male'
-                              ? '/male-icon.svg'
-                              : '/female-icon.svg'
+                            ? '/male-icon.svg'
+                            : '/female-icon.svg'
                           }
                           alt="Gender"
                           width={40}

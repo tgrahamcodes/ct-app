@@ -86,11 +86,11 @@
 	color: #333;
   }
 
-  .sectionTitleRight {
+  .sectionTitle {
 	font-size: 1.25rem;
 	font-weight: bold;
 	margin-bottom: 1rem;
-	align-items: center;
+	justify-content: center;
 	color: #333;
   }
   
