@@ -13,16 +13,16 @@
 	padding: 0 2rem;
 	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 	box-sizing: border-box;
-  }
-  
-  .navContainer {
+}
+
+.navContainer {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
 	width: 100%;
-  }
-  
-  .sectionTitle {
+}
+
+.sectionTitle {
 	font-size: 1.25rem;
 	font-weight: bold;
 	margin-bottom: 1rem;
@@ -31,57 +31,57 @@
 	align-items: center;
 	justify-content: space-between;
 	width: 100%;
-  }
-  
-  .searchIcon {
+}
+
+.searchIcon {
 	cursor: pointer;
 	margin-left: auto;
-  }
-  
-  .logoSection {
+}
+
+.logoSection {
 	display: flex;
 	align-items: center;
 	max-width: 150px;
-  }
-  
-  .logo {
+}
+
+.logo {
 	display: flex;
 	align-items: center;
-  }
-  
-  .logo a {
+}
+
+.logo a {
 	display: flex;
 	align-items: center;
-  }
-  
-  .logo img {
+}
+
+.logo img {
 	max-width: 150px;
 	max-height: 40px;
 	width: auto;
 	height: auto;
 	object-fit: contain;
-  }
-  
-  .linksSection {
+}
+
+.linksSection {
 	display: flex;
 	justify-content: center;
 	flex-grow: 1;
-  }
-  
-  .navLinks {
+}
+
+.navLinks {
 	display: flex;
 	list-style: none;
 	gap: 1rem;
 	margin: 0;
 	padding: 0;
-  }
-  
-  .navLinks li {
+}
+
+.navLinks li {
 	display: flex;
 	align-items: center;
-  }
-  
-  .navLinks li a {
+}
+
+.navLinks li a {
 	display: flex;
 	align-items: center;
 	color: #333;
@@ -90,36 +90,36 @@
 	font-weight: 500;
 	transition: color 0.3s ease;
 	padding: 0.3rem 0.7rem;
-  }
-  
-  .iconContainer {
+}
+
+.iconContainer {
 	margin-right: 0.3rem;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-  }
-  
-  .icon {
+}
+
+.icon {
 	width: 16px;
 	height: 16px;
 	background-size: contain;
 	background-repeat: no-repeat;
 	margin-right: 0.3rem;
-  }
-  
-  .activeLink a {
+}
+
+.activeLink a {
 	color: #00ff00;
 	font-weight: bold;
-  }
-  
-  .userProfile {
+}
+
+.userProfile {
 	display: flex;
 	align-items: center;
-  }
-  
-  .userImage {
+}
+
+.userImage {
 	border-radius: 50%;
 	cursor: pointer;
 	width: 40px;
 	height: 40px;
-  }
+}
