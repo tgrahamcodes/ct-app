@@ -13,6 +13,8 @@ import {
 	Title,
 	Tooltip,
 	Legend,
+	ChartData,
+	Chart,
 } from 'chart.js';
 
 ChartJS.register(
@@ -66,10 +68,18 @@ interface PatientData {
 		name: string;
 		description: string;
 		status: string;
-	}[];
+	}[],
+	lab_results: [];
 }
 
 export default function PatientsPage() {
+
+	const [isClient, setIsClient] = useState(false);
+
+	console.log(isClient)
+	useEffect(() => {
+		setIsClient(true);
+	}, []);
 
 	// Setup variables
 	const [patientData, setPatientData] = useState<PatientData[] | null>(null);
@@ -79,10 +89,17 @@ export default function PatientsPage() {
 	const [showAllInfo, setShowAllInfo] = useState(false);
 
 	// Create Graph
-	const prepareBloodPressureData = () => {
-		if (!selectedPatient?.diagnosis_history) return null;
+	const prepareBloodPressureData = (): ChartData<"line", number[], string> => {
+
+		if (!selectedPatient?.diagnosis_history) {
+			return {
+				labels: [],
+				datasets: []
+			};
+		}
 
 		const sortedHistory = [...selectedPatient.diagnosis_history].sort((a, b) => {
+
 			return b.year - a.year ||
 				['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 					.indexOf(b.month) -
@@ -123,15 +140,11 @@ export default function PatientsPage() {
 					},
 					cache: 'no-store'
 				});
-
 				if (!response.ok) {
 					throw new Error('Failed to fetch patient data');
 				}
-
 				const data: PatientData[] = await response.json();
 				setPatientData(data);
-
-				// Select first patient by default
 				if (data && data.length > 0) {
 					setSelectedPatient(data[0]);
 				}
@@ -141,11 +154,9 @@ export default function PatientsPage() {
 				setIsLoading(false);
 			}
 		};
-
 		fetchPatientData();
 	}, []);
 
-	// Diagnostic Information Section
 	const renderDiagnosticTable = () => {
 		if (!selectedPatient || !selectedPatient.diagnosis_history || selectedPatient.diagnosis_history.length === 0) {
 			return (
@@ -155,7 +166,6 @@ export default function PatientsPage() {
 				</div>
 			);
 		}
-
 		return (
 			<div className={styles.diagnosticSection}>
 				<h2 className={styles.sectionTitle}>Diagnostic Information</h2>
@@ -214,7 +224,6 @@ export default function PatientsPage() {
 	return (
 		<div className={styles.pageContainer}>
 			<div className={styles.columnContainer}>
-
 				<div className={styles.sectionContainer}>
 					<div className="flex items-center justify-between mb-4">
 						<h2 className={styles.sectionTitle}>Patients</h2>
@@ -227,9 +236,9 @@ export default function PatientsPage() {
 						/>
 					</div>
 					<div>
-						{patientData.map((patient) => (
+						{patientData.map((patient, index) => (
 							<div
-								key={patient.patient_id}
+								key={`patient-${patient.patient_id}-${index}`} // Unique key
 								className={`${styles.patientListItem} ${selectedPatient?.patient_id === patient.patient_id ? styles.activePatient : ''
 									}`}
 								onClick={() => setSelectedPatient(patient)}
@@ -253,7 +262,6 @@ export default function PatientsPage() {
 						))}
 					</div>
 				</div>
-
 				<div className={styles.sectionContainer}>
 					<h2 className={styles.sectionTitle}>Diagnostic History</h2>
 					{selectedPatient && (
@@ -265,8 +273,7 @@ export default function PatientsPage() {
 								height: 'auto',
 								minHeight: '400px',
 								overflow: 'visible'
-							}}
-						>
+							}}>
 							<h2 className={styles.sectionTitle}>Blood Pressure</h2>
 							<div className="flex">
 								<div className="w-full">
@@ -283,72 +290,10 @@ export default function PatientsPage() {
 														font: {
 															weight: 'bold'
 														}
-													},
-													custom: function (chart: unknown) {
-														const legendContainer = document.createElement('div');
-														legendContainer.style.display = 'flex';
-														legendContainer.style.flexDirection = 'column';
-
-														const systolicLabel = document.createElement('div');
-														systolicLabel.style.display = 'flex';
-														systolicLabel.style.alignItems = 'center';
-														systolicLabel.style.marginBottom = '10px';
-
-														const systolicPoint = document.createElement('div');
-														systolicPoint.style.width = '10px';
-														systolicPoint.style.height = '10px';
-														systolicPoint.style.borderRadius = '50%';
-														systolicPoint.style.backgroundColor = '#C26EB4';
-														systolicPoint.style.marginRight = '10px';
-
-														const systolicContent = document.createElement('div');
-														systolicContent.innerHTML = `
-                              <span style="font-weight: bold;">Systolic</span><br>
-                              <span style="font-size: 1.5em; font-weight: bold;">
-                                ${selectedPatient.diagnosis_history[0].blood_pressure.systolic.value} mmHg
-                              </span><br>
-                              <span style="font-size: 0.8em; color: gray;">
-                                (${selectedPatient.diagnosis_history[0].blood_pressure.systolic.levels})
-                              </span>
-                            `;
-
-														systolicLabel.appendChild(systolicPoint);
-														systolicLabel.appendChild(systolicContent);
-
-														const diastolicLabel = document.createElement('div');
-														diastolicLabel.style.display = 'flex';
-														diastolicLabel.style.alignItems = 'center';
-
-														const diastolicPoint = document.createElement('div');
-														diastolicPoint.style.width = '10px';
-														diastolicPoint.style.height = '10px';
-														diastolicPoint.style.borderRadius = '50%';
-														diastolicPoint.style.backgroundColor = '#7E6CAB';
-														diastolicPoint.style.marginRight = '10px';
-
-														const diastolicContent = document.createElement('div');
-														diastolicContent.innerHTML = `
-                              <span style="font-weight: bold;">Diastolic</span><br>
-                              <span style="font-size: 1.5em; font-weight: bold;">
-                                ${selectedPatient.diagnosis_history[0].blood_pressure.diastolic.value} mmHg
-                              </span><br>
-                              <span style="font-size: 0.8em; color: gray;">
-                                (${selectedPatient.diagnosis_history[0].blood_pressure.diastolic.levels})
-                              </span>
-                            `;
-
-														diastolicLabel.appendChild(diastolicPoint);
-														diastolicLabel.appendChild(diastolicContent);
-
-														legendContainer.appendChild(systolicLabel);
-														legendContainer.appendChild(diastolicLabel);
-
-														const legendEl = document.getElementById(chart.canvas.id + '-legend');
-														if (legendEl) {
-															legendEl.innerHTML = '';
-															legendEl.appendChild(legendContainer);
-														}
 													}
+												},
+												title: {
+													display: false,
 												}
 											},
 											scales: {
@@ -361,6 +306,78 @@ export default function PatientsPage() {
 												}
 											}
 										}}
+										plugins={[
+											{
+												id: 'custom-legend',
+												afterDraw: (chart: Chart) => {
+													if (!selectedPatient?.diagnosis_history?.[0]) return;
+
+													const legendContainer = document.createElement('div');
+													legendContainer.style.display = 'flex';
+													legendContainer.style.flexDirection = 'column';
+
+													const systolicLabel = document.createElement('div');
+													systolicLabel.style.display = 'flex';
+													systolicLabel.style.alignItems = 'center';
+													systolicLabel.style.marginBottom = '10px';
+
+													const systolicPoint = document.createElement('div');
+													systolicPoint.style.width = '10px';
+													systolicPoint.style.height = '10px';
+													systolicPoint.style.borderRadius = '50%';
+													systolicPoint.style.backgroundColor = '#C26EB4';
+													systolicPoint.style.marginRight = '10px';
+
+													const systolicContent = document.createElement('div');
+													systolicContent.innerHTML = `
+              <span style="font-weight: bold;">Systolic</span><br>
+              <span style="font-size: 1.5em; font-weight: bold;">
+                ${selectedPatient.diagnosis_history[0].blood_pressure.systolic.value} mmHg
+              </span><br>
+              <span style="font-size: 0.8em; color: gray;">
+                (${selectedPatient.diagnosis_history[0].blood_pressure.systolic.levels})
+              </span>
+            `;
+
+													systolicLabel.appendChild(systolicPoint);
+													systolicLabel.appendChild(systolicContent);
+
+													const diastolicLabel = document.createElement('div');
+													diastolicLabel.style.display = 'flex';
+													diastolicLabel.style.alignItems = 'center';
+
+													const diastolicPoint = document.createElement('div');
+													diastolicPoint.style.width = '10px';
+													diastolicPoint.style.height = '10px';
+													diastolicPoint.style.borderRadius = '50%';
+													diastolicPoint.style.backgroundColor = '#7E6CAB';
+													diastolicPoint.style.marginRight = '10px';
+
+													const diastolicContent = document.createElement('div');
+													diastolicContent.innerHTML = `
+              <span style="font-weight: bold;">Diastolic</span><br>
+              <span style="font-size: 1.5em; font-weight: bold;">
+                ${selectedPatient.diagnosis_history[0].blood_pressure.diastolic.value} mmHg
+              </span><br>
+              <span style="font-size: 0.8em; color: gray;">
+                (${selectedPatient.diagnosis_history[0].blood_pressure.diastolic.levels})
+              </span>
+            `;
+
+													diastolicLabel.appendChild(diastolicPoint);
+													diastolicLabel.appendChild(diastolicContent);
+
+													legendContainer.appendChild(systolicLabel);
+													legendContainer.appendChild(diastolicLabel);
+
+													const legendEl = document.getElementById(chart.canvas.id + '-legend');
+													if (legendEl) {
+														legendEl.innerHTML = '';
+														legendEl.appendChild(legendContainer);
+													}
+												}
+											}
+										]}
 									/>
 								</div>
 							</div>
@@ -380,10 +397,10 @@ export default function PatientsPage() {
 							</div>
 							<h3 className={styles.squareTitle}>Respiratory Rate</h3>
 							<div className={styles.squareValue}>
-								{selectedPatient?.diagnosis_history?.[0]?.respiratory_rate?.value || 'N/A'}
+								{selectedPatient?.diagnosis_history?.[0]?.respiratory_rate?.value || 'N/A'} bpm
 							</div>
 							<p className={styles.squareSubtext}>
-								{selectedPatient?.diagnosis_history?.[0]?.respiratory_rate?.levels || 'breaths per minute'}
+								{selectedPatient?.diagnosis_history?.[0]?.respiratory_rate?.levels}
 							</p>
 						</div>
 
@@ -399,10 +416,10 @@ export default function PatientsPage() {
 							</div>
 							<h3 className={styles.squareTitle}>Temperature</h3>
 							<div className={styles.squareValue}>
-								{selectedPatient?.diagnosis_history?.[0]?.temperature?.value || 'N/A'}
+								{selectedPatient?.diagnosis_history?.[0]?.temperature?.value || 'N/A'}°F
 							</div>
 							<p className={styles.squareSubtext}>
-								{selectedPatient?.diagnosis_history?.[0]?.temperature?.levels || '°C'}
+								{selectedPatient?.diagnosis_history?.[0]?.temperature?.levels}
 							</p>
 						</div>
 
@@ -418,14 +435,13 @@ export default function PatientsPage() {
 							</div>
 							<h3 className={styles.squareTitle}>Heart Rate</h3>
 							<div className={styles.squareValue}>
-								{selectedPatient?.diagnosis_history?.[0]?.heart_rate?.value || 'N/A'}
+								{selectedPatient?.diagnosis_history?.[0]?.heart_rate?.value || 'N/A'} bpm
 							</div>
 							<p className={styles.squareSubtext}>
-								{selectedPatient?.diagnosis_history?.[0]?.heart_rate?.levels || 'bpm'}
+								{selectedPatient?.diagnosis_history?.[0]?.heart_rate?.levels}
 							</p>
 						</div>
 					</div>
-
 					{renderDiagnosticTable()}
 				</div>
 
@@ -465,7 +481,6 @@ export default function PatientsPage() {
 											</div>
 										</div>
 									</div>
-
 									<div className={styles.patientListItem}>
 										<div className="flex items-center space-x-4">
 											<div className="bg-white p-2 rounded-lg flex items-center justify-center">
@@ -485,7 +500,6 @@ export default function PatientsPage() {
 											</div>
 										</div>
 									</div>
-
 									<div className={styles.patientListItem}>
 										<div className="flex items-center space-x-4">
 											<div className="bg-white p-2 rounded-lg flex items-center justify-center">
@@ -502,7 +516,6 @@ export default function PatientsPage() {
 											</div>
 										</div>
 									</div>
-
 									<div className={styles.patientListItem}>
 										<div className="flex items-center space-x-4">
 											<div className="bg-white p-2 rounded-lg flex items-center justify-center">
@@ -519,7 +532,6 @@ export default function PatientsPage() {
 											</div>
 										</div>
 									</div>
-
 									<div className={styles.patientListItem}>
 										<div className="flex items-center space-x-4">
 											<div className="bg-white p-2 rounded-lg flex items-center justify-center">
@@ -542,9 +554,9 @@ export default function PatientsPage() {
 							{showAllInfo && (
 								<div className="bg-gray-100 p-3 rounded-[16px] mt-4">
 									<h3 className="font-medium mb-2">Detailed Diagnosis History</h3>
-									{selectedPatient.diagnosis_history?.map((history, index) => (
+									{selectedPatient.diagnosis_history?.map((history, historyIndex) => (
 										<div
-											key={index}
+											key={`history-${historyIndex}-${history.month}-${history.year}`} // Unique key
 											className="mt-2 bg-white p-2 rounded shadow-sm"
 										>
 											<div className="flex justify-between mb-2">
@@ -552,7 +564,6 @@ export default function PatientsPage() {
 													{history.month} {history.year}
 												</span>
 											</div>
-
 											<div className="space-y-2">
 												{[
 													{
@@ -560,13 +571,11 @@ export default function PatientsPage() {
 														value: `${history.blood_pressure.systolic.value}/${history.blood_pressure.diastolic.value}`,
 														levels: history.blood_pressure.systolic.levels
 													},
-
 													{
 														name: 'Heart Rate',
 														value: `${history.heart_rate.value} bpm`,
 														levels: history.heart_rate.levels
 													},
-
 													{
 														name: 'Respiratory Rate',
 														value: `${history.respiratory_rate.value}`,
@@ -577,8 +586,11 @@ export default function PatientsPage() {
 														value: `${history.temperature.value}°C`,
 														levels: history.temperature.levels
 													}
-												].map((item, idx) => (
-													<div key={idx} className={styles.patientListItem}>
+												].map((item, itemIndex) => (
+													<div
+														key={`history-${historyIndex}-item-${itemIndex}`} // Unique key
+														className={styles.patientListItem}
+													>
 														<div className={styles.patientInfo}>
 															<span className={styles.patientName}>{item.name}</span>
 															<span className={styles.patientSubtext}>{item.value}</span>
@@ -594,6 +606,37 @@ export default function PatientsPage() {
 									))}
 								</div>
 							)}
+							<div className="bg-gray-100 p-3 rounded-[16px] mt-4">
+								<h3 className={styles.sectionTitle}>Lab Results</h3>
+								<div>
+									{(!selectedPatient?.lab_results || selectedPatient.lab_results.length === 0) && (
+										<div className="text-center text-gray-500">
+											No lab results available
+										</div>
+									)}
+
+									{selectedPatient?.lab_results?.map((result, index) => (
+										<div
+											key={index}
+											className={styles.patientListItem}
+										>
+											<div className={styles.patientInfo}>
+												<span className={styles.patientName}>{result}</span>
+												<span className={styles.patientSubtext}>Lab Test</span>
+											</div>
+											<div className="flex items-center space-x-2">
+												<Image
+													src="/download-icon.svg"
+													alt="Download"
+													width={20}
+													height={20}
+													className="cursor-pointer"
+												/>
+											</div>
+										</div>
+									))}
+								</div>
+							</div>
 
 							<br />
 							<div className="mt-4 flex justify-center">
@@ -604,7 +647,6 @@ export default function PatientsPage() {
 								</button>
 							</div>
 						</div>
-
 					) : (
 						<div className="text-center text-gray-500">
 							Select a patient to view details
